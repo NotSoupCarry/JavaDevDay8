@@ -152,7 +152,7 @@ public class App {
         String name = controlloInputStringhe(scanner);
 
         System.out.print("Inserisci il Codice Paese: ");
-        String cc = controlloInputStringhe(scanner);
+        String cc = controlloCodicePaese(scanner, conn);
 
         System.out.print("Inserisci il distretto: ");
         String district = controlloInputStringhe(scanner);
@@ -214,4 +214,36 @@ public class App {
             System.out.println("Errore SQL: " + e.getMessage());
         }
     }
+
+    // Metodo per controllare che il CountryCode esista nella tabella country
+    public static String controlloCodicePaese(Scanner scanner, Connection conn) {
+        String countryCode;
+        boolean exist;
+
+        do {
+            System.out.print("Inserisci il Codice Paese: ");
+            countryCode = scanner.nextLine().trim().toUpperCase(); // Converto in maiuscolo per uniformità
+
+            // Query per controllare se il codice esiste nella tabella country
+            String query = "SELECT COUNT(*) FROM country WHERE Code = ?";
+
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setString(1, countryCode);
+                ResultSet rs = pstmt.executeQuery();
+
+                rs.next();
+                exist = rs.getInt(1) > 0; // Se COUNT(*) > 0 allora il codice esiste
+
+                if (!exist) {
+                    System.out.println("Errore: Il codice paese inserito non esiste. Riprova.");
+                }
+            } catch (SQLException e) {
+                System.out.println("Errore SQL: " + e.getMessage());
+                exist = false;
+            }
+        } while (!exist);
+
+        return countryCode; // Restituisce un codice valido
+    }
+
 }
