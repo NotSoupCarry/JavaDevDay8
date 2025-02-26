@@ -97,7 +97,7 @@ public class App {
     // Stampa tutte le città
     public static void stampaCitta(Statement statement) {
         try {
-            String query = "SELECT * FROM city limit 40";
+            String query = "SELECT * FROM city";
             ResultSet rs = statement.executeQuery(query);
             ResultSetMetaData metadata = rs.getMetaData();
             int columnCount = metadata.getColumnCount();
