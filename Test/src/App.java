@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
+import java.sql.ResultSetMetaData;
 
 public class App {
     private static final String URL = "jdbc:mysql://localhost:3306/world";
@@ -36,7 +37,7 @@ public class App {
 
                 switch (scelta) {
                     case 1:
-                        // stampaCitta(statement);
+                        stampaCitta(statement);
                         break;
                     case 2:
                         // cercaCitta(scanner, statement);
@@ -80,6 +81,32 @@ public class App {
         return valore;
     }
     
+    // Stampa tutte le città
+    public static void stampaCitta(Statement statement) throws SQLException {
+        String query = "SELECT * FROM city";
+        ResultSet rs = statement.executeQuery(query);
+        ResultSetMetaData metadata = rs.getMetaData();
+        
+        int columnCount = metadata.getColumnCount();
+    
+        System.out.println("\n--- Elenco delle città ---");
+    
+        // Stampa intestazione delle colonne
+        for (int i = 1; i <= columnCount; i++) {
+            System.out.print(metadata.getColumnName(i) + "\t");
+        }
+        System.out.println(); // Nuova riga
+    
+        // Stampa le righe della tabella
+        while (rs.next()) {
+            for (int i = 1; i <= columnCount; i++) {
+                System.out.print(rs.getString(i) + "\t");
+            }
+            System.out.println(); // Nuova riga dopo ogni città
+        }
+    }
+    
+
     // Data la popolazione in input stampare solo le città con popolazione maggiore di quella inserita 
     public static void filtraPopolazione(Scanner scanner, Statement statement) throws SQLException {
         // Chiedere input per soglia
