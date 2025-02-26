@@ -7,7 +7,7 @@ import java.sql.Statement;
 import java.util.Scanner;
 import java.sql.ResultSetMetaData;
 
-public class TeamPluto {
+public class App {
     private static final String URL = "jdbc:mysql://localhost:3306/world";
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "root";
