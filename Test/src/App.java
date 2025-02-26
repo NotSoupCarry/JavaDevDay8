@@ -1,5 +1,6 @@
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -33,17 +34,17 @@ public class App {
                 System.out.print("Scelta: ");
                 scelta = controlloInputInteri(scanner);
 
-                scanner.nextLine(); 
+                scanner.nextLine();
 
                 switch (scelta) {
                     case 1:
                         stampaCitta(statement);
                         break;
                     case 2:
-                        // cercaCitta(scanner, statement);
+                        cercaCitta(scanner, conn);
                         break;
                     case 3:
-                        // inserisciCitta(scanner, statement);
+                        inserisciCitta(scanner, conn);
                         break;
                     case 4:
                         filtraPopolazione(scanner, statement);
@@ -65,7 +66,8 @@ public class App {
         scanner.close();
     }
 
-    // Metodo per controllare l'input intero e assicurarsi che sia un numero non negativo
+    // Metodo per controllare l'input intero e assicurarsi che sia un numero non
+    // negativo
     public static int controlloInputInteri(Scanner scanner) {
         int valore;
         do {
@@ -80,23 +82,23 @@ public class App {
         } while (valore < 0);
         return valore;
     }
-    
+
     // Stampa tutte le città
     public static void stampaCitta(Statement statement) throws SQLException {
         String query = "SELECT * FROM city";
         ResultSet rs = statement.executeQuery(query);
         ResultSetMetaData metadata = rs.getMetaData();
-        
+
         int columnCount = metadata.getColumnCount();
-    
+
         System.out.println("\n--- Elenco delle città ---");
-    
+
         // Stampa intestazione delle colonne
         for (int i = 1; i <= columnCount; i++) {
             System.out.print(metadata.getColumnName(i) + "\t");
         }
         System.out.println(); // Nuova riga
-    
+
         // Stampa le righe della tabella
         while (rs.next()) {
             for (int i = 1; i <= columnCount; i++) {
@@ -105,29 +107,84 @@ public class App {
             System.out.println(); // Nuova riga dopo ogni città
         }
     }
-    
 
-    // Data la popolazione in input stampare solo le città con popolazione maggiore di quella inserita 
+    // Cerca una città per nome
+    public static void cercaCitta(Scanner scanner, Connection conn) throws SQLException {
+        System.out.print("Inserisci il nome della città: ");
+        String cityName = scanner.nextLine();
+
+        String query = "SELECT * FROM city WHERE Name = ?";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, cityName);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                System.out.println("\n--- Dettagli della città ---");
+                System.out.println("ID: " + rs.getInt("ID"));
+                System.out.println("Nome: " + rs.getString("Name"));
+                System.out.println("Codice Paese: " + rs.getString("CountryCode"));
+                System.out.println("Distretto: " + rs.getString("District"));
+                System.out.println("Popolazione: " + rs.getInt("Population"));
+            } else {
+                System.out.println("Città non trovata.");
+            }
+        }
+    }
+
+    // Inserisci città
+    public static void inserisciCitta(Scanner scanner, Connection conn) throws SQLException {
+        System.out.print("Inserisci il nome della città: ");
+        String name = scanner.nextLine();
+
+        System.out.print("Inserisci il Codice Paese: ");
+        String cc = scanner.nextLine();
+
+        System.out.print("Inserisci il distretto: ");
+        String district = scanner.nextLine();
+
+        System.out.print("Inserisci il numero della popolazione: ");
+        int popolazione = controlloInputInteri(scanner);
+
+        // Query per l'inserimento
+        String query = "INSERT INTO city (Name, CountryCode, District, Population) VALUES (?, ?, ?, ?)";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, name);
+            pstmt.setString(2, cc);
+            pstmt.setString(3, district);
+            pstmt.setInt(4, popolazione);
+
+            int rowsInserted = pstmt.executeUpdate();
+            if (rowsInserted > 0) {
+                System.out.println("Città inserita con successo!");
+            } else {
+                System.out.println("Errore nell'inserimento della città.");
+            }
+        }
+    }
+
+    // Data la popolazione in input stampare solo le città con popolazione maggiore
+    // di quella inserita
     public static void filtraPopolazione(Scanner scanner, Statement statement) throws SQLException {
         // Chiedere input per soglia
         System.out.print("Inserisci il numero soglia: ");
         int soglia = controlloInputInteri(scanner);
-    
+
         // Chiedere quanti risultati visualizzare
         System.out.print("Inserisci quanti dati vuoi vedere: ");
         int limit = controlloInputInteri(scanner);
-        
+
         // Query per filtrare la popolazione
         String query = "SELECT Name, Population FROM city WHERE Population >= " + soglia + " LIMIT " + limit;
         ResultSet resultSet = statement.executeQuery(query);
-    
+
         // Stampare i risultati
         System.out.println("\n--- Città con popolazione superiore a " + soglia + " ---");
         while (resultSet.next()) {
             System.out.println(resultSet.getString("Name") + ": " + resultSet.getInt("Population"));
         }
     }
-    
 
     // Media aspettativa di vita per continente
     public static void calcolaAspettativaMedia(Statement statement) throws SQLException {
