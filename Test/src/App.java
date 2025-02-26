@@ -215,7 +215,7 @@ public class App {
         }
     }
 
-    // Metodo per controllare che il CountryCode esista nella tabella country
+    // Metodo per controllare che il CountryCode esista
     public static String controlloCodicePaese(Scanner scanner, Connection conn) {
         String countryCode;
         boolean exist;
